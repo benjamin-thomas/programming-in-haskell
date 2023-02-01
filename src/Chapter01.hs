@@ -1,5 +1,8 @@
 module Chapter01 where
 
+hello :: [Char]
+hello = "World!"
+
 {-
 
 cabal exec ghci src/Chapter01.hs
@@ -20,7 +23,7 @@ cabal exec doctest src/
 find ./src/ | entr -rc cabal exec doctest src/
 ghcid --command 'cabal new-repl' --test ':!doctest ./src/Chapter01.hs'
 
- -}
+-}
 
 {- | In functional programming, the function parameters get replaced inside the function's body
 
@@ -33,6 +36,7 @@ double 3 = 6
 
 
 Evaluating the left inner function first is shorter (compute the function's parameter first):
+
 double x = x + x
 double (double 3) = double (3 + 3)
 double (double 3) = double 6
@@ -40,7 +44,8 @@ double (double 3) = 6 + 6
 double (double 3) = 12
 
 
-Evaluating first the outer function is longer (replace `x` param with `double 3` on the right)
+Evaluating first the outer function is longer (replace `x` param with `double 3` on the right):
+
 double x = x + x
 double (double 3) = (double 3) + (double 3)
 double (double 3) = (3 + 3) + (double 3)
@@ -54,14 +59,14 @@ double (double 3) = 12
 >>> double (double 3)
 12
 -}
+
 double :: Num a => a -> a
 double x =    x + x
 
 {- | Another demonstration of parameter substitution
-
 sum [1..5] = sum [1, 2, 3, 4, 5] -- apply `[..]`
 sum [1..5] = 1 + 2 + 3 + 4 + 5   -- apply `sum`
 sum [1..5] = 15                  -- apply `(+)`
 >>> sum [1..5]
 15
- -}
+-}

@@ -4,7 +4,6 @@ hello :: [Char]
 hello = "World!"
 
 {-
-
 cabal exec ghci src/Chapter01.hs
 
 Or
@@ -61,7 +60,7 @@ double (double 3) = 12
 -}
 
 double :: Num a => a -> a
-double x =    x + x
+double x = x + x
 
 {- | Another demonstration of parameter substitution
 sum [1..5] = sum [1, 2, 3, 4, 5] -- apply `[..]`

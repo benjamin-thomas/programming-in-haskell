@@ -135,3 +135,23 @@ qsort (x:xs) = qsort smaller ++ [x] ++ qsort greater
                where
                    smaller = [a | a <- xs, a <= x]
                    greater = [a | a <- xs, a  > x]
+
+
+{- |seqn executes a sequence of n IO actions
+
+I think the type sig `seqn :: [IO a] -> IO [a]` could be read as:
+`seqn` is a function that accepts a list of actions wrapped in IO,
+and returns an unwrapped list of those actions, wrapped in single IO.
+
+To test this function, open `cabal repl`, then:
+> res <- Chapter01.seqn [getChar, getChar, getChar] -- type "abc" and the function returns. `res` will be equal to "abc"!
+
+NOTE: I think I may be inside an implicit `do` block, when inside GHCi.
+ -}
+
+-- seqn :: Monad m => [m a] -> m [a]
+seqn :: [IO a] -> IO [a]
+seqn [] = return []
+seqn (act:acts) = do x  <- act
+                     xs <- seqn acts
+                     return (x:xs)

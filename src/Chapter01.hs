@@ -128,6 +128,7 @@ qsort [3, 5, 1, 4, 2] = ( qsort [] ++ [1] ++ qsort [2]  ) ++ [3] ++ (qsort [4] +
 qsort [3, 5, 1, 4, 2] = ( [] ++ [1] ++ [2]  ) ++ [3] ++ ([4] ++ [5] ++ [])
 qsort [3, 5, 1, 4, 2] = ([1, 2]) ++ [3] ++ ([4, 5])
 qsort [3, 5, 1, 4, 2] = [1, 2, 3, 4, 5]
+
  -}
 qsort :: Ord a => [a] -> [a]
 qsort [] = []
@@ -147,11 +148,93 @@ To test this function, open `cabal repl`, then:
 > res <- Chapter01.seqn [getChar, getChar, getChar] -- type "abc" and the function returns. `res` will be equal to "abc"!
 
 NOTE: I think I may be inside an implicit `do` block, when inside GHCi.
+
+A more general type may be used:
+
+    `seqn :: Monad m => [m a] -> m [a]`
+
+Which reads as:
+
+    For any monadic type `m`, transforms a list of actions of type `m a` to a single action that returns
+    a list of actions of type `a`
+
+This latest type definition is more general, and makes the function compatible with other types of effects (other than IO).
  -}
 
--- seqn :: Monad m => [m a] -> m [a]
-seqn :: [IO a] -> IO [a]
+-- seqn :: [IO a] -> IO [a]
+seqn :: Monad m => [m a] -> m [a]
 seqn [] = return []
 seqn (act:acts) = do x  <- act
                      xs <- seqn acts
                      return (x:xs)
+
+
+-- QUESTIONS
+
+{- 1. Give another possible calculation for the result of `double (double 2)`
+
+      Already done, see above.
+ -}
+
+{- 2. Show that sum [x] = x for any number x
+
+    sum [x] = sum (x:[])
+    sum [x] = (x + 0) -- apply `sum`
+    sum [x] = x
+
+
+ -}
+
+{- 3. Define a function `product` that produces the product of a list of numbers,
+      and show using your definitions that `product [2,3,4] = 24
+
+
+product [2,3,4] = 2 * (product [3,4])
+product [2,3,4] = 2 * 3 * (product [4])
+product [2,3,4] = 2 * 3 * 4 * (product [])
+product [2,3,4] = 2 * 3 * 4 * 1
+product [2,3,4] = 2 * 3 * 4
+product [2,3,4] = 2 * 12
+product [2,3,4] = 24
+
+ -}
+
+{- |
+>>> product' [2,3,4]
+24
+ -}
+product' :: Num p => [p] -> p
+product' [] = 1
+product' (x:xs) = x * product' xs
+
+{- 4. How should the definition of the function `qsort` be modified so that it produces
+      a reverse sorted version of a list.
+
+      Juts switching the arguments on the edges of `++ [x] ++` suffices.
+ -}
+
+{- |
+>>> qsortRev [3,2,4,1,5]
+[5,4,3,2,1]
+ -}
+
+qsortRev :: Ord a => [a] -> [a]
+qsortRev [] = []
+qsortRev (x:xs) = qsortRev greater ++ [x] ++ qsortRev lesser
+                  where
+                    greater = [a | a <- xs, a >= x]
+                    lesser  = [a | a <- xs, a  < x]
+
+{- 5. What would be the effect of replacing <= by < in the original definition
+      of `qsort`.
+
+      Hint: consider the example:
+        qsort [2,2,3,1,1]
+
+      We would "loose" values, neither falling on the left (smaller), nor on the right (greater).
+
+qsort [2,2,3,1,1] = qsort [1,1] ++ [2] ++ qsort [3]
+qsort [2,2,3,1,1] = (qsort [] ++ [1] ++ qsort []) ++ [2] ++ [3]
+qsort [2,2,3,1,1] = [] ++ [1] ++ [] ++ [2] ++ [3]
+qsort [2,2,3,1,1] = [1,2,3]
+ -}

@@ -84,7 +84,11 @@ sum' [1, 2, 3] = 1 + 2 + 3 + 0
 sum' [1, 2, 3] = 1 + 2 + 3
 sum' [1, 2, 3] = 1 + 5
 sum' [1, 2, 3] = 6
+
+
+The type signature `Num a => [a] -> a` means:
+For any number of type `a`, transform a list of `a`s to an `a`.
  -}
-sum' :: Num p => [p] -> p
+sum' :: Num a => [a] -> a
 sum' [] = 0
 sum' (n:ns) = n + sum' ns

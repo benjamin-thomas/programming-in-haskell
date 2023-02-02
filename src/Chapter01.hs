@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use foldr" #-}
 module Chapter01 where
 
 hello :: [Char]
@@ -69,3 +71,20 @@ sum [1..5] = 15                  -- apply `(+)`
 >>> sum [1..5]
 15
 -}
+
+{- | define our own sum function
+
+>>> sum' [1,2,3]
+6
+
+sum' [1, 2, 3] = 1 + sum' [2, 3]
+sum' [1, 2, 3] = 1 + 2 + sum' [3]
+sum' [1, 2, 3] = 1 + 2 + 3 + sum' []
+sum' [1, 2, 3] = 1 + 2 + 3 + 0
+sum' [1, 2, 3] = 1 + 2 + 3
+sum' [1, 2, 3] = 1 + 5
+sum' [1, 2, 3] = 6
+ -}
+sum' :: Num p => [p] -> p
+sum' [] = 0
+sum' (n:ns) = n + sum' ns

@@ -9,6 +9,7 @@ library
     exposed-modules:
           MyLib
         , Chapter01
+        , Chapter02
 
     -- Modules included in this library but not exported.
     -- other-modules:

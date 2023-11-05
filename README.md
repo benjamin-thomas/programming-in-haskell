@@ -65,3 +65,10 @@ find ./src/ | entr -rc cabal exec doctest src/
 # Re-run chapter-specific doctests on any file change -- BETTER!
 ghcid --command 'cabal new-repl' --test ':!doctest ./src/Chapter01.hs'
 ```
+
+## Run tests
+
+```
+ghcid -c 'cabal repl' -T ':!doctest ./src/Chapter01.hs'
+ghcid -c 'cabal repl' -T ':!doctest ./src/'
+```

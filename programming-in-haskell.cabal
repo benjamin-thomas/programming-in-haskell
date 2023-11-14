@@ -12,6 +12,9 @@ library
         , Chapter02
         , Chapter03
         , Chapter04
+        , Chapter05
+        , Chapter05.Caesar
+        , Chapter05.Exercises
 
     -- Modules included in this library but not exported.
     -- other-modules:

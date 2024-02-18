@@ -5,7 +5,7 @@
 {-# HLINT ignore "Use foldr" #-}
 module Chapter06.Exercises where
 
-import Prelude hiding (and, concat, elem, replicate, (!!), (^))
+import Prelude hiding (and, concat, elem, last, replicate, sum, take, (!!), (^))
 
 {- |
 
@@ -258,3 +258,136 @@ replicate n x
 (_ : xs) !! n
    | n < 0 = error "negative"
    | otherwise = xs !! (n - 1)
+
+{- |
+
+>>> elem 1 []
+False
+
+>>> elem 3 [1..9]
+True
+
+>>> elem 10 [1..9]
+False
+-}
+elem :: (Eq a) => a -> [a] -> Bool
+elem a [] = False
+elem a (x : xs) = a == x || elem a xs
+
+-------------------------------------------------------------------------------
+
+{- |
+
+7) Merge 2 sorted lists
+
+>>> merge [] []
+[]
+
+>>> merge [2,5,6] [1,3,4]
+[1,2,3,4,5,6]
+-}
+merge :: (Ord a) => [a] -> [a] -> [a]
+merge [] [] = []
+merge xs [] = xs
+merge [] ys = ys
+merge (x : xs) (y : ys)
+   | x < y = x : merge xs (y : ys)
+   | otherwise = y : merge (x : xs) ys
+
+-------------------------------------------------------------------------------
+
+{- |
+
+8) Using `merge` define a function `mSort` that implements merge sort, in which
+   the empty list and singleton list are already sorted, and any other list is
+   sorted by merging together the two lists that result from sorting the two
+   halves of the list separately.
+
+   Hint: first define a function halve.
+
+
+>>> halve []
+([],[])
+
+>>> halve [1]
+([1],[])
+
+>>> halve [1,2]
+([1],[2])
+
+>>> halve [1,2,3]
+([3,1],[2])
+
+>>> halve [1,2,3,4]
+([3,1],[4,2])
+
+>>> halve [1,2,3,4,5]
+([5,3,1],[4,2])
+
+>>> halve [1,2,3,4,5,6]
+([5,3,1],[6,4,2])
+-}
+halve :: [a] -> ([a], [a])
+halve =
+   aux True ([], [])
+  where
+   aux flip (l, r) lst =
+      case lst of
+         [] -> (l, r)
+         (x : xs) ->
+            if flip
+               then aux (not flip) (x : l, r) xs
+               else aux (not flip) (l, x : r) xs
+
+{- |
+
+>>> mSort [1,4,3,6,5,4,8,2,3,1,9]
+[1,1,2,3,3,4,4,5,6,8,9]
+-}
+mSort :: (Ord a) => [a] -> [a]
+mSort [] = []
+mSort [x] = [x]
+mSort lst =
+   let (l, r) = halve lst
+    in merge (mSort l) (mSort r)
+
+{- |
+
+9) Implement sum, take and last
+
+>>> sum []
+0
+
+>>> sum [1,2,3,4]
+10
+
+---
+
+>>> take 0 [1..5]
+[]
+
+>>> take 3 [1..5]
+[1,2,3]
+
+---
+
+>>> last []
+Nothing
+
+>>> last [1,2,3]
+Just 3
+-}
+sum :: (Num a) => [a] -> a
+sum [] = 0
+sum (x : xs) = x + sum xs
+
+take :: (Num n, Ord n) => n -> [a] -> [a]
+take 0 xs = []
+take n (x : xs)
+   | n < 0 = []
+   | otherwise = x : take (n - 1) xs
+
+last :: [a] -> Maybe a
+last [] = Nothing
+last [x] = Just x
+last (_ : xs) = last xs

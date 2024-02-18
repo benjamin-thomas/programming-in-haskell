@@ -15,6 +15,9 @@ library
         , Chapter05
         , Chapter05.Caesar
         , Chapter05.Exercises
+        , Chapter06
+        , Chapter06.RejectNegative
+        , Chapter06.Exercises
 
     -- Modules included in this library but not exported.
     -- other-modules:

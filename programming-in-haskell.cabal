@@ -18,6 +18,7 @@ library
         , Chapter06
         , Chapter06.RejectNegative
         , Chapter06.Exercises
+        , Chapter07
 
     -- Modules included in this library but not exported.
     -- other-modules:

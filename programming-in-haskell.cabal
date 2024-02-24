@@ -20,6 +20,8 @@ library
         , Chapter06.Exercises
         , Chapter07
         , Chapter07.BinaryStringTransmitter
+        , Chapter07.Voting
+        , Chapter07.Exercises
 
     -- Modules included in this library but not exported.
     -- other-modules:

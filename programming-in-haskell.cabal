@@ -19,6 +19,7 @@ library
         , Chapter06.RejectNegative
         , Chapter06.Exercises
         , Chapter07
+        , Chapter07.BinaryStringTransmitter
 
     -- Modules included in this library but not exported.
     -- other-modules:

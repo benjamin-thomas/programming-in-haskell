@@ -9,9 +9,10 @@
 {-# HLINT ignore "Use product" #-}
 {-# HLINT ignore "Use or" #-}
 {-# HLINT ignore "Use and" #-}
+{-# HLINT ignore "Use odd" #-}
 module Chapter07 where
 
-import Prelude hiding (and, filter, length, map, or, product, reverse, sum)
+import Prelude hiding (and, filter, length, map, odd, or, product, reverse, sum, (.))
 
 -- ghcid -c 'cabal repl' -T ':!doctest ./src/Chapter07.hs'
 -- echo ./src/Chapter07.hs | entr -c doctest /_
@@ -448,3 +449,53 @@ foldr (-) 0 [1,2,3] = 1 - (2 - (3 - 0))
                     = 1 + 1
                     = 2
  -}
+
+-------------------------------------------------------------------------------
+-- FUNCTION COMPOSITION
+-------------------------------------------------------------------------------
+
+-- With the function composition operator, we can write simpler function definitions
+
+(.) :: (b -> c) -> (a -> b) -> (a -> c)
+f . g = \x -> f (g x)
+
+odd :: (Integral a) => a -> Bool
+odd n = not (even n)
+
+odd' :: (Integral a) => a -> Bool
+odd' = not . even
+
+twice' :: (a -> a) -> a -> a
+twice' f x = f (f x)
+
+twice'' :: (a -> a) -> a -> a
+twice'' f = f . f
+
+{-
+Defined earlier
+sumSquareEven :: [Int] -> Int
+sumSquareEven ns = sum (map (^ 2) (filter even ns))
+ -}
+
+sumSquareEven' :: [Int] -> Int
+sumSquareEven' = sum . map (^ 2) . filter even
+
+-- We can also compose a list of functions like such:
+compose :: [a -> a] -> (a -> a)
+compose = foldr (.) id
+
+{- |
+
+>>> twice ((:) 0) [3]
+[0,0,3]
+
+>>> compose [((:)1),((:)2)] $ [3]
+[1,2,3]
+
+>>> compose [map (+10), map (*2)] [1,2,3]
+[12,14,16]
+
+
+>>> map (+10) . map (*2) $ [1,2,3]
+[12,14,16]
+-}

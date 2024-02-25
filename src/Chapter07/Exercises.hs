@@ -86,9 +86,9 @@ any f (x : xs) = f x || any f xs
 takeWhile :: (a -> Bool) -> [a] -> [a]
 takeWhile _ [] = []
 takeWhile f (x : xs) =
-    if f x
-        then x : takeWhile f xs
-        else []
+  if f x
+    then x : takeWhile f xs
+    else []
 
 {- |
 
@@ -106,9 +106,9 @@ takeWhile f (x : xs) =
 -}
 dropWhile _ [] = []
 dropWhile f (x : xs) =
-    if f x
-        then dropWhile f xs
-        else x : dropWhile (const False) xs
+  if f x
+    then dropWhile f xs
+    else x : dropWhile (const False) xs
 
 {- |
 
@@ -139,9 +139,9 @@ map f = foldr (\x acc -> f x : acc) []
 
 filter :: (a -> Bool) -> [a] -> [a]
 filter f =
-    foldr
-        (\x acc -> if f x then x : acc else acc)
-        []
+  foldr
+    (\x acc -> if f x then x : acc else acc)
+    []
 
 {- |
 
@@ -162,15 +162,15 @@ ghci> foldl (\(n, acc) x -> (n - 1, acc + x * (10 ^ (n -1)))) (4, 0) [2, 3, 4, 5
 -}
 dec2int :: (Foldable t, Num a) => t a -> a
 dec2int xs =
-    snd
-        $ foldl
-            ( \(n, acc) x ->
-                ( n - 1
-                , acc + x * (10 ^ n)
-                )
-            )
-            (length xs - 1, 0)
-            xs
+  snd
+    $ foldl
+      ( \(n, acc) x ->
+          ( n - 1
+          , acc + x * (10 ^ n)
+          )
+      )
+      (length xs - 1, 0)
+      xs
 
 {- |
 
@@ -214,10 +214,10 @@ I guess that's as good as I can do?
 -}
 dec2int' :: (Num a) => [a] -> a
 dec2int' xs =
-    foldl
-        (\acc (n, m) -> acc + n * m)
-        0
-        (zip (iterate (* 10) 1) $ reverse xs)
+  foldl
+    (\acc (n, m) -> acc + n * m)
+    0
+    (zip (iterate (* 10) 1) $ reverse xs)
 
 {-
 The book's solution 🤦‍♂️️
@@ -362,8 +362,8 @@ chop8 bits = take 8 bits : chop8 (drop 8 bits)
 -}
 unfold :: (a -> Bool) -> (a -> b) -> (a -> a) -> a -> [b]
 unfold p h t x
-    | p x = []
-    | otherwise = h x : unfold p h t (t x)
+  | p x = []
+  | otherwise = h x : unfold p h t (t x)
 
 int2bin :: Integer -> [Integer]
 int2bin = unfold (== 0) (`mod` 2) (`div` 2)
@@ -376,3 +376,35 @@ map' f = unfold null (f . head) tail
 
 iterate' :: (Enum a) => (a -> a) -> a -> [a]
 iterate' f start = unfold (const False) head (\xs -> f (head xs) : []) [start ..]
+
+{-
+7) Extend the binary string transmitter example with error detection
+8) Test it with a fake faulty communication channel
+-}
+
+{- |
+9) Define `altMap`
+
+>>> altMap (+10) (+100) [0,1,2,3,4]
+[10,101,12,103,14]
+-}
+altMap :: (a -> b) -> (a -> b) -> [a] -> [b]
+altMap f g [] = []
+altMap f g xs = head (map f xs) : altMap g f (tail xs)
+
+{- |
+
+Using `altMap`, implement `luhn :: [Int] -> Bool` from chapter 4
+
+>>> luhn [7, 9, 9, 2, 7, 3, 9, 8, 7, 1, 3]
+True
+
+>>> luhn [8, 9, 9, 2, 7, 3, 9, 8, 7, 1, 3]
+False
+-}
+luhn :: [Int] -> Bool
+luhn ns =
+  sum run `mod` 10 == 0
+ where
+  cap n = if n > 9 then n - 9 else n
+  run = altMap id (cap . (* 2)) ns

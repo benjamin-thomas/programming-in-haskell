@@ -35,8 +35,8 @@ type Bit = Int -- type alias
 -}
 bin2int :: [Bit] -> Int
 bin2int bits = sum [w * b | (w, b) <- zip weights bits]
-  where
-    weights = iterate (* 2) 1
+ where
+  weights = iterate (* 2) 1
 
 {-
 
@@ -105,6 +105,30 @@ make8 bits = take 8 $ bits ++ repeat 0
 
 {- |
 
+Add parity bit
+
+>>> parity []
+[0]
+
+>>> parity [0]
+[0,0]
+
+>>> parity [1]
+[1,1]
+
+>>> parity [1,0,1,1,0,0,0,0]
+[1,1,0,1,1,0,0,0,0]
+
+>>> parity [1,0,0,1,0,0,0,0]
+[0,1,0,0,1,0,0,0,0]
+-}
+parity :: [Bit] -> [Bit]
+parity bits
+  | odd $ length $ filter (== 1) bits = 1 : bits
+  | otherwise = 0 : bits
+
+{- |
+
 >>> make8 $ int2bin $ ord 'a'
 [1,0,0,0,0,1,1,0]
 
@@ -131,9 +155,25 @@ make8 bits = take 8 $ bits ++ repeat 0
 
 >>> encode "abc"
 [1,0,0,0,0,1,1,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,1,0]
+
+--- Add parity bit
+
+>>> (parity . make8 . int2bin . ord) 'a'
+[1,1,0,0,0,0,1,1,0]
+
+>>> concatMap (parity . make8 . int2bin . ord) "abc"
+[1,1,0,0,0,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,0,1,1,0]
+
+[^ 1,0,0,0,0,1,1,0,^ 0,1,0,0,0,1,1,0,^ 1,1,0,0,0,1,1,0] <-- from orig
+
+>>> encode' "abc"
+[1,1,0,0,0,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,0,1,1,0]
 -}
 encode :: String -> [Bit]
 encode = concatMap (make8 . int2bin . ord)
+
+encode' :: String -> [Bit]
+encode' = concatMap (parity . make8 . int2bin . ord)
 
 {-
 
@@ -154,6 +194,22 @@ chop8 bits = take 8 bits : chop8 (drop 8 bits)
 
 {- |
 
+chop the next 8 bits, while ensuring bit parity is maintained. Crashes otherwise
+-}
+chop8' :: [Int] -> [[Bit]]
+chop8' bits =
+  case take 9 bits of
+    [] -> []
+    (x : xs) ->
+      let
+        x' = if odd $ length $ filter (== 1) xs then 1 else 0
+       in
+        if x /= x'
+          then error "Invalid parity"
+          else xs : chop8' (drop 9 bits)
+
+{- |
+
 
 >>> map bin2int' $ chop8 [1..16]
 [1793,3833]
@@ -167,7 +223,25 @@ chop8 bits = take 8 bits : chop8 (drop 8 bits)
 decode :: [Bit] -> String
 decode = map (chr . bin2int') . chop8
 
-{-
+{- | Decode with parity
+
+>>> map bin2int' $ chop8' [1,1,0,0,0,0,1,1,0]
+[97]
+
+>>> map (chr .bin2int') $ chop8' [1,1,0,0,0,0,1,1,0]
+"a"
+
+>>> decode' [1,1,0,0,0,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,0,1,1,0]
+"abc"
+
+>>> decode' [0,1,0,0,0,0,1,1,0,1,0,1,0,0,0,1,1,0,0,1,1,0,0,0,1,1,0]
+"*** Exception: Invalid parity
+...
+-}
+decode' :: [Bit] -> String
+decode' = map (chr . bin2int') . chop8'
+
+{- |
 
 >>> transmit "Hello, World!"
 "Hello, World!"
@@ -182,11 +256,29 @@ Simulated channel
 
 >>> decode $ id $ encode "hello"
 "hello"
- -}
+
+---
+
+With parity check
+
+>>> decode' $ id $ encode' "hello"
+"hello"
+
+>>> decode' $ channel $ encode' "hello"
+"hello"
+
+>>> decode' $ faultyChannel $ encode' "hello"
+"*** Exception: Invalid parity
+...
+-}
 
 -- We simulate a perfect communication channel
 channel :: [Bit] -> [Bit]
 channel = id
+
+-- We simulate a faulty communication channel
+faultyChannel :: [Bit] -> [Bit]
+faultyChannel = tail
 
 transmit :: String -> String
 transmit = decode . channel . encode

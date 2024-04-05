@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-type-defaults #-}
+
 module Chapter05.Exercises where
 
 import Prelude hiding (replicate)

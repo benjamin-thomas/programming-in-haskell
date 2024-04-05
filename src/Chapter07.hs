@@ -1,5 +1,5 @@
+{-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 {-# HLINT ignore "Redundant lambda" #-}
 {-# HLINT ignore "Avoid lambda" #-}
 {-# HLINT ignore "Use map" #-}
@@ -10,6 +10,8 @@
 {-# HLINT ignore "Use or" #-}
 {-# HLINT ignore "Use and" #-}
 {-# HLINT ignore "Use odd" #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
+
 module Chapter07 where
 
 import Prelude hiding (and, filter, length, map, odd, or, product, reverse, sum, (.))

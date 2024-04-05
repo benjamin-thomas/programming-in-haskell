@@ -1,8 +1,12 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 {-# HLINT ignore "Use list literal pattern" #-}
 {-# HLINT ignore "Use list literal" #-}
 {-# HLINT ignore "Use foldr" #-}
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
+
 module Chapter06.Exercises where
 
 import Prelude hiding (and, concat, elem, last, replicate, sum, take, (!!), (^))

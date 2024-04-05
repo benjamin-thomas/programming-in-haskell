@@ -1,8 +1,11 @@
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 {-# HLINT ignore "Use uncurry" #-}
 {-# HLINT ignore "Redundant lambda" #-}
 {-# HLINT ignore "Use list literal" #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
+
 module Chapter07.Exercises where
 
 import Debug.Trace (trace)

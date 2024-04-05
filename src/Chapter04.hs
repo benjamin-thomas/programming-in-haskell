@@ -1,11 +1,15 @@
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# HLINT ignore "Use splitAt" #-}
 {-# HLINT ignore "Use guards" #-}
 {-# HLINT ignore "Redundant lambda" #-}
 {-# HLINT ignore "Collapse lambdas" #-}
 {-# HLINT ignore "Redundant if" #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+
 module Chapter04 where
 
 import Prelude (

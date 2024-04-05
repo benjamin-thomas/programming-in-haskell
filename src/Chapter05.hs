@@ -1,7 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 {-# HLINT ignore "Use isAsciiLower" #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module Chapter05 where
 

@@ -2,10 +2,14 @@ cabal-version:      2.4
 name:               programming-in-haskell
 version:            0.1.0.0
 
+common ghc-options
+    ghc-options:    -Wall
+
 extra-source-files:
     README.md
 
 library
+    import: ghc-options
     exposed-modules:
           MyLib
         , Chapter01

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
 {-# HLINT ignore "Use foldr" #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+
 module Chapter06 where
 
 import Debug.Trace (trace, traceShow, traceShowId)

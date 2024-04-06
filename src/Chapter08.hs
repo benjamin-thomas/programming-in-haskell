@@ -161,4 +161,86 @@ Succ (Succ (Succ Zero))
 >>> int2nat (-1)
 *** Exception: Bad input
 ...
+
+>>> addSimple three Zero
+Succ (Succ (Succ Zero))
+
+>>> addSimple Zero four
+Succ (Succ (Succ (Succ Zero)))
+
+>>> nat2int $ addSimple three four
+7
+
+>>> nat2int $ add three four
+7
 -}
+addSimple :: Nat -> Nat -> Nat
+addSimple a b = int2nat (nat2int a + nat2int b)
+
+{- |
+
+>>> nat2int $ add three Zero
+3
+
+>>> nat2int $ add Zero four
+4
+
+>>> nat2int $ add three four
+7
+
+>>> nat2int $ add Zero Zero
+0
+
+>>> add Zero (Succ Zero)
+Succ Zero
+
+>>> add (Succ Zero) Zero
+Succ Zero
+
+>>> add (Succ Zero) (Succ Zero)
+Succ (Succ Zero)
+
+>>> add (Succ (Succ Zero)) (Succ Zero)
+Succ (Succ (Succ Zero))
+
+>>> add (Succ Zero) (Succ (Succ Zero))
+Succ (Succ (Succ Zero))
+
+>>> add (Succ (Succ Zero)) (Succ (Succ Zero))
+Succ (Succ (Succ (Succ Zero)))
+
+>>> nat2int $ add' three four
+7
+
+>>> nat2int $ add' three Zero
+3
+-}
+add :: Nat -> Nat -> Nat
+add a Zero = a
+add Zero b = b
+add (Succ a) (Succ b) = Succ (Succ (add a b)) -- this is like saying "add 2 while popping off 2 values"
+{-
+
+add (Succ (Succ Zero)) (Succ Zero)
+= { applying add }
+  Succ (Succ (add (Succ Zero) Zero))
+= { applying add }
+  Succ (Succ (Succ Zero))
+ -}
+
+-- Now for the book's definition. It's "better" because we don't have to consume `b`.
+-- Instead, we can just insert it into our 'function stack" once we've fully consumed `a`.
+{-
+
+add (Succ (Succ Zero)) (Succ Zero)
+= { applying add }
+  Succ (add (Succ Zero) (Succ Zero))
+= { applying add }
+  Succ (Succ (add Zero (Succ Zero)))
+= { applying add }
+  Succ (Succ (Succ Zero))
+
+ -}
+add' :: Nat -> Nat -> Nat
+add' Zero b = b
+add' (Succ a) b = Succ (add' a b)

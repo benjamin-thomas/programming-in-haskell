@@ -76,22 +76,22 @@ rev East = West
 
 rev2 :: Direction -> Direction
 rev2 dir = case dir of
-    North -> South
-    South -> North
-    East -> West
-    West -> East
+  North -> South
+  South -> North
+  East -> West
+  West -> East
 
 rev3 :: Direction -> Direction
 rev3 = \case
-    North -> South
-    South -> North
-    West -> East
-    East -> West
+  North -> South
+  South -> North
+  West -> East
+  East -> West
 
 -- The constructors in data declarations can also have arguments
 data Shape
-    = Circle Float -- radius
-    | Rect Float Float -- width height
+  = Circle Float -- radius
+  | Rect Float Float -- width height
 
 square :: Float -> Shape
 square n = Rect n n
@@ -116,9 +116,9 @@ newtype NatSimple = N Int
 
 -- We can also describe a Nat type in a recursive fashion
 data Nat
-    = Zero
-    | Succ Nat
-    deriving (Show)
+  = Zero
+  | Succ Nat
+  deriving (Show)
 
 three :: Nat
 three = Succ $ Succ $ Succ Zero
@@ -134,9 +134,9 @@ nat2int (Succ n) = 1 + nat2int n
 -- 🤯️🤯️🤯️
 int2nat :: Int -> Nat
 int2nat n
-    | n == 0 = Zero
-    | n > 0 = Succ $ int2nat (n - 1)
-    | otherwise = error "Bad input"
+  | n == 0 = Zero
+  | n > 0 = Succ $ int2nat (n - 1)
+  | otherwise = error "Bad input"
 
 {- |
 
@@ -244,3 +244,45 @@ add (Succ (Succ Zero)) (Succ Zero)
 add' :: Nat -> Nat -> Nat
 add' Zero b = b
 add' (Succ a) b = Succ (add' a b)
+
+{-
+
+Another example of the data mechanism is defining our own List type
+
+ -}
+
+data List a
+  = Nil
+  | Cons a (List a)
+  deriving (Show)
+
+{- |
+
+>>> len Nil
+0
+
+>>> len (Cons 1 (Cons 2 (Cons 3 Nil)))
+3
+-}
+len :: List a -> Int
+len Nil = 0
+len (Cons _ xs) = 1 + len xs
+
+{- | A non-empty list
+>>> len' (End 0)
+1
+
+>>> len' (Cons' 1 (End 2))
+2
+
+>>> len' (Cons' 1 (Cons' 2 (End 3)))
+3
+-}
+data List' a
+  = End a
+  | Cons' a (List' a)
+  deriving (Show)
+
+len' :: List' a -> Int
+len' (End _) = 1
+len' (Cons' _ xs) = 1 + len' xs

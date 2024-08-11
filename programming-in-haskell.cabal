@@ -27,6 +27,15 @@ library
         , Chapter07.Voting
         , Chapter07.Exercises
         , Chapter08
+        , Chapter08.Part04.Trees
+        , Chapter08.Part04.Tree0
+        , Chapter08.Part04.Tree1
+        , Chapter08.Part04.Tree2
+        , Chapter08.Part04.Tree3
+        , Chapter08.Part04.Tree4
+        , Chapter08.Part06.TautologyChecker
+        , Chapter08.Part06.GenBools
+        , Chapter08.Part06.MyGenBools
 
     -- Modules included in this library but not exported.
     -- other-modules:

@@ -1,0 +1,3 @@
+(executable
+ (name abstract_machine)
+ (libraries))

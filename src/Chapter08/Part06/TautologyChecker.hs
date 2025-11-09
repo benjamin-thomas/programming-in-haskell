@@ -6,13 +6,25 @@ module Chapter08.Part06.TautologyChecker where
 
 import Chapter08 (Assoc, find)
 
+{-
+  Here are the common logic symbols:
+
+  - ∧ = AND (conjunction)
+  - ∨ = OR (disjunction)
+  - ¬ = NOT (negation)
+  - → = IMPLIES (implication)
+-}
+
 data Prop
     = Const Bool
-    | Var Char
-    | Not Prop
-    | And Prop Prop
+    | Var   Char
+    | Not   Prop
+    | And   Prop Prop
+    | Or    Prop Prop
     | Imply Prop Prop
+    deriving Show
 
+-- A ∧ ¬A
 p1 :: Prop
 p1 =
     And
@@ -62,6 +74,17 @@ p4' =
     )
         `Imply` Var 'B'
 
+-- Classic tautology: Law of Excluded Middle
+-- "A is either true or false" - always true!
+p5 :: Prop
+p5 = Var 'A' `Or` Not (Var 'A')
+
+-- De Morgan's Law (tautology)
+-- "Not (A and B) is equivalent to (Not A or Not B)"
+p6 :: Prop
+p6 = Not (Var 'A' `And` Var 'B') `Imply` (Not (Var 'A') `Or` Not (Var 'B'))
+
+
 {- In order to evaluate a proposition to a logical value, we need to know the
 value of each of its variables. For this reason, we declare a lookup table that
 associates variable names to logical values.
@@ -73,6 +96,7 @@ eval _ (Const b) = b
 eval s (Var x) = find x s -- may crash
 eval s (Not p) = not (eval s p)
 eval s (And a b) = eval s a && eval s b
+eval s (Or a b) = eval s a || eval s b
 eval s (Imply p q) = eval s p <= eval s q
 
 {- To decide if a proposition is a tautology, we will consider all substitutions
@@ -84,6 +108,7 @@ vars (Const _) = []
 vars (Var x) = [x]
 vars (Not p) = vars p
 vars (And a b) = vars a <> vars b
+vars (Or a b) = vars a <> vars b
 vars (Imply p q) = vars p <> vars q
 
 -- See Chapter08.Part06.MyGenBools and Chapter08.Part06.GenBools

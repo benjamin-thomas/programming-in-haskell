@@ -37,6 +37,7 @@ library
         , Chapter08.Part06.GenBools
         , Chapter08.Part06.MyGenBools
         , Chapter08.Part07.AbstractMachine
+        , Chapter09.Countdown
 
     -- Modules included in this library but not exported.
     -- other-modules:

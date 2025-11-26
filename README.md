@@ -72,3 +72,42 @@ ghcid --command 'cabal new-repl' --test ':!doctest ./src/Chapter01.hs'
 ghcid -c 'cabal repl' -T ':!doctest ./src/Chapter01.hs'
 ghcid -c 'cabal repl' -T ':!doctest ./src/'
 ```
+
+
+## Pretty printing in GHCi
+
+```sh
+cabal repl --build-depends pretty-simple
+# or
+stack ghci --package pretty-simple ./myFile.hs
+```
+
+Then:
+
+```
+*Main> :m Text.Pretty.Simple
+Prelude Text.Pretty.Simple> pPrint [1,2,3]
+[ 1
+, 2
+, 3
+]
+Prelude Text.Pretty.Simple> pPrintOpt CheckColorTty defaultOutputOptionsDarkBg { outputOptionsCompact = True } [1,2,3]
+[ 1, 2, 3 ]
+
+*Main Text.Pretty.Simple> :load TicTacToe.hs
+
+-- WARNING: does not play well with lazyness (favor `pPrint` in that case)
+*Main Text.Pretty.Simple> let pPrint' = pPrintOpt CheckColorTty defaultOutputOptionsDarkBg { outputOptionsCompact = True }
+
+*Main Text.Pretty.Simple> mapM_ pPrint' (moves empty O)
+[ [ O, B, B ], [ B, B, B ], [ B, B, B ] ]
+[ [ B, O, B ], [ B, B, B ], [ B, B, B ] ]
+[ [ B, B, O ], [ B, B, B ], [ B, B, B ] ]
+[ [ B, B, B ], [ O, B, B ], [ B, B, B ] ]
+[ [ B, B, B ], [ B, O, B ], [ B, B, B ] ]
+[ [ B, B, B ], [ B, B, O ], [ B, B, B ] ]
+[ [ B, B, B ], [ B, B, B ], [ O, B, B ] ]
+[ [ B, B, B ], [ B, B, B ], [ B, O, B ] ]
+[ [ B, B, B ], [ B, B, B ], [ B, B, O ] ]
+
+```

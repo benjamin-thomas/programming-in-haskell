@@ -456,6 +456,11 @@ count :: Tree a -> Int
 count (Node _ []) = 1
 count (Node _ ts) = 1 + sum (fmap count ts)
 
+
+-- Book solution
+count2 :: Tree a -> Int
+count2 (Node _ ts) = 1 + sum (map count ts)
+
 {-
 
 *Main Text.Pretty.Simple> countDepth $ gameTree empty O
@@ -469,6 +474,8 @@ countDepth tree =
     aux d (Node _ []) = d
     aux d (Node _ ts) = maximum (fmap (aux (d+1)) ts)
 
+
+-- Book solution
 countDepth2 :: Tree a -> Int
 countDepth2 (Node _ []) = 0
 countDepth2 (Node _ ts) = 1 + maximum (map countDepth2 ts)

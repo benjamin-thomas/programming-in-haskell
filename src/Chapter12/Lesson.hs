@@ -17,6 +17,7 @@ import Prelude
     , return
     , concat
     , concatMap
+    , div
     , even
     , id
     , getChar
@@ -26,13 +27,18 @@ import Prelude
     , read
     , replicate
     , (==)
+    , (/=)
+    , (>=)
+    , (>)
+    , (<)
+    , (<=)
     , (.)
     , ($)
     , (+)
     , (-)
     , (*)
     , (^)
-    , (>>=)
+    --, (>>=)
     )
 
 -- Notice the same "shape"
@@ -227,6 +233,9 @@ Nothing
 Prelude> pure (+) <*> [] <*> [4]
 []
 
+Prelude> pure (+) <*> [4] <*> []
+[]
+
 --
 
 Prelude> pure (+) <*> [3,8] <*> [4,2]
@@ -250,6 +259,40 @@ instance Applicative [] where
 
 *Main> prods2 [1,2] [3,4]
 [3,4,6,8]
+
+---
+
+NOTE: Elm's map2, map3 implementation differs from Haskell's Applicative implementation.
+
+Elm    : chose to zip lists
+Haskell: chose to produce cartesian products
+
+> List.map2 (*) [1,2,3] [2,3,4]
+[2,6,12] : List number
+
+λ> pure (*) <*> [1,2,3] <*> [2,3,4]
+[2,3,4,4,6,8,6,9,12]
+
+We can get the same behavior as Elm's map2,map3, etc. via the ZipList data structure
+
+Prelude Control.Applicative> pure (*) <*> ZipList [1,2,3] <*> ZipList [2,3,4]
+ZipList {getZipList = [2,6,12]}
+
+To obtain Haskell's cartesian product producing behavior in Elm, we'd have to do as in OCaml
+
+Elm
+> List.concatMap (\x -> List.map (\y -> (*) x y) [2,3,4]) [1,2,3]
+[2,3,4,4,6,8,6,9,12]
+
+OCaml
+List.concat_map (fun x -> List.map (fun y -> ( * ) x y) [2;3;4]) [1;2;3];;
+- : int list = [2; 3; 4; 4; 6; 8; 6; 9; 12]
+
+We should note that OCaml too choose to produce zipped lists for its mapN operations
+
+List.map2 ( * ) [1;2;3] [2;3;4];;
+- : int list = [2; 6; 12]
+
 -}
 prods1 :: [Int] -> [Int] -> [Int]
 prods1 xs ys = [x*y | x <- xs, y <- ys]
@@ -263,9 +306,11 @@ instance Applicative IO where
     pure x = return x
 
     (<*>) :: IO (a -> b) -> IO a -> IO b
-    (<*>) mf ma =
-        mf >>= \f ->
-        ma >>= \a ->
+    (<*>) mf ma = do
+        --mf >>= \f ->
+        --ma >>= \a ->
+        f <- mf
+        a <- ma
         return (f a)
 
     -- Book version
@@ -358,4 +403,105 @@ Prelude> (pure (.) <*> pure (+1) <*> pure (*2) <*> pure 3)
 Prelude> pure (+1) <*> (pure (*2) <*> pure 3)
 7
 
+-}
+
+
+-- MONADS
+
+data Expr
+    = Val Int
+    | Div Expr Expr
+
+
+{- This function may blow up on bad input
+
+λ> eval1 $ Div (Val 3) (Val 0)
+*** Exception: divide by zero
+-}
+eval1 :: Expr -> Int
+eval1 (Val n)   = n
+eval1 (Div x y) = eval1 x `div` eval1 y
+
+
+safeDiv a b =
+    if b == 0 then
+        Nothing
+    else
+        Just (a `div` b)
+
+
+-- This version handle failures gracefully
+-- Since applicative requires `f` to be "pure" (non-contained), below won't compile
+{-
+eval2 :: Expr -> Maybe Int
+eval2 (Val n)   = Just n
+eval2 (Div x y) =
+    pure safeDiv <*> eval2 x <*> eval2 y
+-}
+
+{-
+
+λ> eval2 $ Div (Val 5) (Val 2)
+Just 2
+
+λ> eval2 $ Div (Val 5) (Val 0)
+Nothing
+-}
+eval2 :: Expr -> Maybe Int
+eval2 (Val n)   = Just n
+eval2 (Div mx my) =
+    case eval2 mx of
+        Nothing -> Nothing
+        Just x  ->
+            case eval2 my of
+                Nothing -> Nothing
+                Just y  ->
+                    safeDiv x y
+
+
+-- We implement (>>=) to handle the common pattern of breaking early
+(>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
+mx >>= f =
+    case mx of
+        Nothing -> Nothing
+        Just x  -> f x
+
+
+-- Now we can cleanup the breaking early pattern
+{-
+
+λ> eval3 $ Div (Val 5) (Val 2)
+Just 2
+λ> eval3 $ Div (Val 5) (Val 0)
+Nothing
+
+-}
+eval3 :: Expr -> Maybe Int
+eval3 (Val n)     = Just n
+eval3 (Div mx my) =
+    eval3 mx >>= \x ->
+    eval3 my >>= \y ->
+        safeDiv x y
+
+
+-- We can also use do-notation
+-- (does not work here due to missing instances declarations)
+{-
+
+*Main> eval4 $ Div (Val 5) (Val 2)
+Just 2
+
+*Main> eval4 $ Div (Val 5) (Val 0)
+Nothing
+
+-}
+{-
+eval4 :: Expr -> Maybe Int
+eval4 (Val n)     = Just n
+eval4 (Div mx my) = do
+    --x <- eval4 mx
+    x <- Just 3
+    --y <- eval4 my
+    y <- Just 4
+    safeDiv x y
 -}

@@ -96,7 +96,7 @@ Prelude Text.Pretty.Simple> pPrintOpt CheckColorTty defaultOutputOptionsDarkBg {
 
 *Main Text.Pretty.Simple> :load TicTacToe.hs
 
--- WARNING: does not play well with lazyness (favor `pPrint` in that case)
+-- WARNING: does not play well with laziness (favor `pPrint` in that case)
 *Main Text.Pretty.Simple> let pPrint' = pPrintOpt CheckColorTty defaultOutputOptionsDarkBg { outputOptionsCompact = True }
 
 *Main Text.Pretty.Simple> mapM_ pPrint' (moves empty O)

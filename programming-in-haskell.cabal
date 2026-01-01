@@ -35,6 +35,7 @@ library
     Chapter08.Part07.AbstractMachine
     Chapter09.Countdown
     Chapter12.Exercises
+    Chapter13.Lesson
     MyLib
 
   -- Modules included in this library but not exported.

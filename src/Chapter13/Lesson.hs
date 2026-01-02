@@ -2,16 +2,16 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# HLINT ignore "Use <$>" #-}
 {-# HLINT ignore "Use const" #-}
-{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Avoid lambda" #-}
 {-# HLINT ignore "Use first" #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-module Chapter13.Lesson where
+module Chapter13.Lesson (expr, parse, Parser) where
 
-import Control.Applicative (Alternative (empty, (<|>)), many)
-import Data.Char (digitToInt, isAlpha, isAlphaNum, isDigit, isLower, isUpper, toUpper)
+import Control.Applicative ()
+import Data.Char (digitToInt, isAlpha, isAlphaNum, isDigit, isLower, isSpace, isUpper, toUpper)
 
 -- We can view a Parser as a function going from a String to a structured output
 -- type Parser = String -> Tree
@@ -188,13 +188,16 @@ Such a concept is captured by the Control.Applicative.Alternative class.
 
  -}
 
-{-
-Commenting out, to obtain "many" for free (further down)
-
 class (Applicative f) => Alternative f where
     empty :: f a -- denotes failure
     (<|>) :: f a -> f a -> f a
--}
+
+    -- this is nuts
+    many :: f a -> f [a]
+    many x = some x <|> pure []
+
+    some :: f a -> f [a]
+    some x = pure (:) <*> x <*> many x
 
 {-
 
@@ -232,9 +235,6 @@ instance Alternative Parser where
                     x -> x
             )
 
-{-
-Commenting out since importing the real Alternative class creates a conflict
-
 instance Alternative Maybe where
     empty :: Maybe a
     empty = Nothing
@@ -242,7 +242,6 @@ instance Alternative Maybe where
     (<|>) :: Maybe a -> Maybe a -> Maybe a
     Just a <|> _ = Just a
     _ <|> b = b
--}
 
 {-
 
@@ -322,7 +321,7 @@ char x = sat (== x)
 {- |
 
 >>> parse (string "hello") "helloWorld"
-[("","World")]
+[("hello","World")]
 
 >>> parse (string "hello") "hellWorld"
 []
@@ -342,4 +341,465 @@ string :: String -> Parser String
 string [] = return []
 string (x : xs) = do
     _ <- char x
-    string xs
+    _ <- string xs
+    return (x : xs)
+
+{- |
+
+>>> parse ident "Hello123"
+[]
+
+>>> parse ident "hello123 = 9"
+[("hello123"," = 9")]
+-}
+ident :: Parser String
+ident = do
+    x <- lower
+    xs <- many alphaNum
+    return (x : xs)
+
+{- |
+
+>>> parse nat "abc"
+[]
+
+>>> parse nat "123abc"
+[(123,"abc")]
+-}
+nat :: Parser Int
+nat = do
+    xs <- some digit
+    return (read xs)
+
+{- |
+
+>>> parse space "123abc"
+[((),"123abc")]
+
+>>> parse space "   123abc"
+[((),"123abc")]
+-}
+space :: Parser ()
+space = do
+    _ <- many (sat isSpace)
+    return ()
+
+{- |
+
+>>> parse int "123"
+[(123,"")]
+
+>>> parse int "-123"
+[(-123,"")]
+
+>>> parse int "--123"
+[]
+-}
+int :: Parser Int
+int =
+    neg <|> nat
+  where
+    neg =
+        char '-' >> negate <$> nat
+
+-- HANDLING SPACING
+
+{- | Applies a parser, ignoring spaces around the desired value
+
+
+>>> parse (token int) "  123  45  "
+[(123,"45  ")]
+-}
+token :: Parser a -> Parser a
+token p = do
+    () <- space
+    v <- p
+    () <- space
+    return v
+
+identifier :: Parser String
+identifier = token ident
+
+natural :: Parser Int
+natural = token nat
+
+integer :: Parser Int
+integer = token int
+
+{- |
+
+>>> parse (symbol "var") "   var x = 1"
+[("var","x = 1")]
+-}
+symbol :: String -> Parser String
+symbol = token . string
+
+sym :: Char -> Parser Char
+sym = token . char
+
+{-
+
+>>> parse nats "[1,2 , 3   ,4]"
+[([1,2,3,4],"")]
+
+>>> parse nats "[1,2 , 3   ,4"
+[]
+
+ -}
+nats :: Parser [Int]
+nats = do
+    x <- sym '[' >> natural
+    xs <- many (sym ',' >> natural)
+    _ <- sym ']'
+    return (x : xs)
+
+-- ARITHMETIC EXPRESSIONS
+
+expr :: Parser Int
+expr = do
+    t <- term
+    add t <|> return t
+  where
+    add t = do
+        _ <- sym '+'
+        e <- expr
+        return (t + e)
+
+term :: Parser Int
+term = do
+    f <- factor
+    mul f <|> return f
+  where
+    mul f = do
+        _ <- sym '*'
+        t <- term
+        return (f * t)
+
+factor :: Parser Int
+factor =
+    parenExpr <|> natural
+  where
+    parenExpr = do
+        _ <- sym '('
+        e <- expr
+        _ <- sym ')'
+        return e
+
+{-
+
+>>> eval "2+3*4"
+14
+
+>>> eval "2*3+4"
+10
+ -}
+eval :: String -> Int
+eval xs = case parse expr xs of
+    [(n, [])] -> n
+    [(_, out)] -> error ("Unused input: " ++ out)
+    _ -> error "Invalid input"
+
+-- CALCULATOR
+
+-- See Calculator.hs
+
+--- EXERCISES
+
+{-
+
+1) Define a Haskell comment parser
+
+>>> parse comment "-- Hello\nLINE2"
+[((),"LINE2")]
+
+ -}
+comment :: Parser ()
+comment = do
+    _ <- string "--"
+    _ <- many (sat (/= '\n'))
+    _ <- char '\n'
+    return ()
+
+{-
+
+2) Using our second grammar for arithmetic expressions, draw the two possible
+parse trees for the expression 2+3+4
+
+expr   = expr + expr | term
+term   = term * term | factor
+factor = (expr) | nat
+nat    = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+---
+
+A)
+
+expr
+├─ expr ─ term ─ factor ─ nat 2
+├─ +
+└─ expr
+    ├─ expr ─ term ─ factor ─ nat 3
+    ├─ +
+    └─ expr ─ term ─ factor ─ nat 4
+
+---
+
+B)
+
+expr
+├─ expr
+│  ├─ expr ─ term ─ factor ─ nat 2
+│  ├─ +
+│  └─ expr ─ term ─ factor ─ nat 3
+├─ +
+└─ expr ─ term ─ factor ─ nat 4
+
+ -}
+
+{-
+
+3) Using our third grammar, draw the parse tree for the following expressions:
+
+- 2+3
+- 2*3*4
+- (2+3)+4
+
+  expr   = term   (+ expr | ε)
+  term   = factor (* term | ε)
+  factor = (expr) | nat
+
+---
+
+2+3
+
+expr
+├─ term ─ factor ─ nat ─ 2
+├─ +
+└─ expr ─ term ─ factor ─ nat 3
+
+---
+
+2*3
+
+expr
+└─ term
+    ├─ factor ─ nat ─ 2
+    ├─ *
+    └─ term ─ factor ─ nat ─ 3
+
+---
+
+2*3*4
+
+expr
+└─ term
+    ├─ factor ─ nat ─ 2
+    ├─ *
+    └─ term
+         ├─ factor ─ nat ─ 3
+         ├─ *
+         └─ term ─ factor ─ nat ─ 4
+
+---
+
+(2+3)+4
+
+expr
+├─ term ─ factor
+│           ├─ (
+│           ├─ expr
+│           │    ├─ term ─ factor ─ nat ─ 2
+│           │    ├─ +
+│           │    └─ expr ─ term ─ factor ─ nat ─ 3
+│           │
+│           └─ )
+├─ +
+└─ expr ─ term ─ factor ─ nat ─ 4
+
+--- Better trees draw by chatgpt (verifying my answers)
+
+2+3
+
+expr
+├─ term
+│  └─ factor
+│     └─ nat(2)
+├─ '+'
+└─ expr
+   └─ term
+      └─ factor
+         └─ nat(3)
+
+---
+
+2*3*4 (right associative)
+
+expr
+└─ term
+   ├─ factor
+   │  └─ nat(2)
+   ├─ '*'
+   └─ term
+      ├─ factor
+      │  └─ nat(3)
+      ├─ '*'
+      └─ term
+         └─ factor
+            └─ nat(4)
+
+---
+
+(2+3)+4
+
+expr
+├─ term
+│  └─ factor
+│     ├─ '('
+│     ├─ expr
+│     │  ├─ term
+│     │  │  └─ factor
+│     │  │     └─ nat(2)
+│     │  ├─ '+'
+│     │  └─ expr
+│     │     └─ term
+│     │        └─ factor
+│     │           └─ nat(3)
+│     └─ ')'
+├─ '+'
+└─ expr
+   └─ term
+      └─ factor
+         └─ nat(4)
+
+ -}
+
+{-
+
+4) Explain why the final simplification of the grammar has a dramatic effect on
+the efficiency of the parser.
+
+Hint: begin by considering how an expression comprising a single number would be
+parsed if this simplification step had not been made.
+
+For each expr and term node in the tree, we'd do the work twice. Besides it
+takes many steps to obtain the right side result.
+
+Parse 0:
+    try term + expr
+        try factor * term
+        backtrack
+    backtrack
+        try term
+            try factor * term
+            backtrack
+            try factor
+                OK
+
+Compared to:
+
+Parse 0:
+    term
+        try "+ expr" -> fails
+        try factor
+            try "* term" -> fails
+                try "(expr)" -> fails
+                    try nat 0 -> success
+
+ -}
+
+{-
+
+5) Define a type for Expr and modify the parser for expressions to have type:
+
+expr :: Parser Expr
+
+-}
+
+data Expr
+    = Add Term Expr
+    | Ter Term
+    deriving (Show)
+
+data Term
+    = Mul Factor Term
+    | Fac Factor
+    deriving (Show)
+
+data Factor
+    = Prn Expr
+    | Nat Int
+    deriving (Show)
+
+{-
+
+>>> parse expr' "2+3*4"
+[(Add (Fac (Nat 2)) (Ter (Mul (Nat 3) (Fac (Nat 4)))),"")]
+-}
+expr' :: Parser Expr
+expr' = do
+    t <- term'
+    add t <|> return (Ter t)
+  where
+    add :: Term -> Parser Expr
+    add t = do
+        _ <- sym '+'
+        e <- expr'
+        return $ Add t e
+
+{-
+
+>>> parse term' "1"
+[(Fac (Nat 1),"")]
+
+>>> parse term' "2*3"
+[(Mul (Nat 2) (Fac (Nat 3)),"")]
+-}
+term' :: Parser Term
+term' = do
+    f <- factor'
+    mul f <|> return (Fac f)
+  where
+    mul :: Factor -> Parser Term
+    mul f = do
+        _ <- sym '*'
+        t <- term'
+        return $ Mul f t
+
+{-
+
+>>> parse factor' "1"
+[(Nat 1,"")]
+
+>>> parse factor' "(1)"
+[(Prn (Ter (Fac (Nat 1))),"")]
+
+>>> parse factor' "(1+2)"
+[(Prn (Add (Fac (Nat 1)) (Ter (Fac (Nat 2)))),"")]
+
+ -}
+factor' :: Parser Factor
+factor' =
+    parenExpr <|> nat'
+  where
+    nat' :: Parser Factor
+    nat' = Nat <$> natural
+
+    parenExpr :: Parser Factor
+    parenExpr = do
+        _ <- sym '('
+        e <- expr'
+        _ <- sym ')'
+        return (Prn e)
+
+{-
+
+6) Extend the parser `expr :: Parser Int` to support subtraction and division,
+and to use integer values rather than natural numbers based upon the following
+revision of the grammar.
+
+expr = term (+ expr | - expr | ε)
+term = factor (* term | / term | ε)
+factor = (expr) | int
+int = ... | -1 | 0 | 1 | ...
+
+ -}

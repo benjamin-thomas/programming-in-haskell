@@ -111,3 +111,17 @@ Prelude Text.Pretty.Simple> pPrintOpt CheckColorTty defaultOutputOptionsDarkBg {
 [ [ B, B, B ], [ B, B, B ], [ B, B, O ] ]
 
 ```
+
+## Tips
+
+To test unexported functions in ghci make sure to run:
+
+```
+:m *Chapter13.Lesson
+```
+
+*not*:
+```
+:m Chapter13.Lesson
+```
+

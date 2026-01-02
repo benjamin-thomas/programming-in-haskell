@@ -78,15 +78,27 @@ calc xs = do
     display xs
     c <- getCh
     if elem c buttons
-        then
+        then do
+            clearError
             process c xs
         else do
-            beep
+            beep c xs
             calc xs
 
-beep :: IO ()
-beep =
+clearError :: IO ()
+clearError = do
+    writeAt (1, 20) (replicate 100 ' ')
+    writeAt (1, 21) (replicate 100 ' ')
+
+writeError :: String -> IO ()
+writeError str = do
+    writeAt (1, 20) ("ERROR: " ++ str)
+    writeAt (length str + length "ERROR: ", 21) "^"
+
+beep :: Char -> String -> IO ()
+beep c xs = do
     -- putStr "\BEL"
+    writeError (xs ++ [c])
     void $ system "paplay /usr/share/sounds/freedesktop/stereo/bell.oga"
 
 process :: Char -> String -> IO ()
@@ -108,7 +120,7 @@ eval :: String -> IO ()
 eval xs = case parse expr xs of
     [(n, [])] -> calc (show n)
     _ -> do
-        beep
+        beep '?' xs
         calc xs
 
 clear :: IO ()

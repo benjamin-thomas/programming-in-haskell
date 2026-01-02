@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-module Chapter13.Lesson (expr, parse, Parser) where
+module Chapter13.Lesson (expr, parse) where
 
 import Control.Applicative ()
 import Data.Char (digitToInt, isAlpha, isAlphaNum, isDigit, isLower, isSpace, isUpper, toUpper)
@@ -817,3 +817,51 @@ factor = (expr) | int
 int    = ... | -1 | 0 | 1 | ...
 
  -}
+
+{-
+
+7) Further extend the grammar to support exponentiation which is assumed to
+associate to the right, and have higher priority than multiplication and
+division, but lower priority than parentheses and numbers.
+
+For example, 2^3*4 means (2^3)*4
+
+Hint: the new level of priority requires a new rule in the grammar.
+
+---
+
+New grammar needs to become:
+
+expr   = term (+ expr | - expr | ε)
+term   = expo (* term | / term | ε)
+expo   = factor (^ expo | ε)
+factor = int | (expr)
+int    = ... | -1 | 0 | 1 | ...
+
+See Exercise7.hs
+
+-}
+
+{-
+
+8) Consider expressions built from natural numbers using a subtraction operator
+that is assumed to associate on the left.
+
+a. Translate this description directly into a grammar.
+b. implement this grammar as a parser `expr :: Parser Int`
+c. What is the problem with this parser?
+d. Show how it can be fixed. Hint: rewrite the parser using the repetition
+   primitive `many` and the library function `foldl`.
+
+See Exercise8.hs
+
+ -}
+
+{-
+
+9) Modify the calculator program to indicate the approximate position of an error
+rather than just sounding a beep.
+
+DONE
+
+-}

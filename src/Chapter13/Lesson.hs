@@ -458,27 +458,41 @@ nats = do
 expr :: Parser Int
 expr = do
     t <- term
-    add t <|> return t
+    add t <|> sub t <|> return t
   where
+    add :: Int -> Parser Int
     add t = do
         _ <- sym '+'
         e <- expr
         return (t + e)
 
+    sub :: Int -> Parser Int
+    sub t = do
+        _ <- sym '-'
+        e <- expr
+        return (t - e)
+
 term :: Parser Int
 term = do
     f <- factor
-    mul f <|> return f
+    mul f <|> div' f <|> return f
   where
+    mul :: Int -> Parser Int
     mul f = do
         _ <- sym '*'
         t <- term
         return (f * t)
+    div' :: Int -> Parser Int
+    div' f = do
+        _ <- sym '/'
+        t <- term
+        return (f `div` t)
 
 factor :: Parser Int
 factor =
-    parenExpr <|> natural
+    parenExpr <|> integer
   where
+    parenExpr :: Parser Int
     parenExpr = do
         _ <- sym '('
         e <- expr
@@ -797,9 +811,9 @@ factor' =
 and to use integer values rather than natural numbers based upon the following
 revision of the grammar.
 
-expr = term (+ expr | - expr | ε)
-term = factor (* term | / term | ε)
+expr   = term (+ expr | - expr | ε)
+term   = factor (* term | / term | ε)
 factor = (expr) | int
-int = ... | -1 | 0 | 1 | ...
+int    = ... | -1 | 0 | 1 | ...
 
  -}

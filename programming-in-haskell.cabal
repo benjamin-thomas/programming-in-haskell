@@ -39,6 +39,10 @@ library
     Chapter13.Exercise7
     Chapter13.Exercise8
     Chapter13.Lesson
+    Chapter14.Lesson1
+    Chapter14.Lesson2
+    Chapter14.Lesson3
+    Chapter14.Lesson4
     MyLib
 
   -- Modules included in this library but not exported.

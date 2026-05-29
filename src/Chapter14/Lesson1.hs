@@ -1,28 +1,28 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+
+{- HLINT ignore "Use fold" -}
+
+module Chapter14.Lesson1 where
 
 import Prelude
-    ( foldr
-    , even
-    , map
-
-    , Bool(..)
-    , Maybe(..)
-
+    ( Bool (..)
     , Eq
-    , Ord
-    , Show
-    , Read
-
+    , Maybe (..)
     , Num
-
+    , Ord
+    , Read
+    , Show
+    , even
+    , foldr
+    , map
     , ($)
-    , (+)
-    , (*)
-    , (.)
-
-    , (++)
     , (&&)
+    , (*)
+    , (+)
+    , (++)
+    , (.)
     , (||)
     )
 
@@ -44,19 +44,16 @@ class Monoid a where
     mconcat :: [a] -> a
     mconcat = foldr mappend mempty
 
-
 instance Monoid [a] where
     mempty = []
     mappend = (++)
 
-
-instance Monoid a => Monoid (Maybe a) where
+instance (Monoid a) => Monoid (Maybe a) where
     mempty = Nothing
 
     mappend Nothing b = b
     mappend a Nothing = a
     mappend (Just a) (Just b) = Just (mappend a b)
-
 
 {-
 
@@ -71,21 +68,19 @@ each given scenario.
 
 -}
 newtype Sum a = Sum a
-        deriving
-            ( Eq
-            , Ord
-            , Show
-            , Read
-            )
+    deriving
+        ( Eq
+        , Ord
+        , Show
+        , Read
+        )
 
 getSum :: Sum a -> a
 getSum (Sum x) = x
 
-
-instance Num a => Monoid (Sum a) where
-    mempty  = Sum 0
-    mappend (Sum a) (Sum b) = Sum (a+b)
-
+instance (Num a) => Monoid (Sum a) where
+    mempty = Sum 0
+    mappend (Sum a) (Sum b) = Sum (a + b)
 
 newtype Product a = Product a
     deriving
@@ -95,15 +90,12 @@ newtype Product a = Product a
         , Read
         )
 
-
 getProduct :: Product a -> a
 getProduct (Product x) = x
 
-
-instance Num a => Monoid (Product a) where
+instance (Num a) => Monoid (Product a) where
     mempty = Product 1
-    mappend (Product a) (Product b) = Product (a*b)
-
+    mappend (Product a) (Product b) = Product (a * b)
 
 {-
 
@@ -122,10 +114,8 @@ newtype All = All Bool
         , Read
         )
 
-
 getAll :: All -> Bool
 getAll (All x) = x
-
 
 {-
 
@@ -140,7 +130,6 @@ instance Monoid All where
     mempty = All True
     mappend (All a) (All b) = All (a && b)
 
-
 newtype Any = Any Bool
     deriving
         ( Eq
@@ -149,10 +138,8 @@ newtype Any = Any Bool
         , Read
         )
 
-
 getAny :: Any -> Bool
 getAny (Any x) = x
-
 
 {-
 
